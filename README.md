@@ -145,6 +145,8 @@ During the test, the key press on the keypad is observed, and the corresponding 
 Two groups conisiting of a capacitor connected to ground and three different resistor values each connected in series with their own wire electrode acting as keys on a piano. In each sampling group, the capacitors are used for sampling while the three resistors and electrodes are used as channels to read and adjust an acquisition value.
 
 #### Setup
+* When initialising the project, enable default modes on pins. In the ioc HAL interface select TSC in 'System Core'. Select the 'Sampling' in Group 6 and Group 8 as G6_IO4 and G8_IO4. Tick all the remaining boxes, ignoring 'Shielding'.
+
 * Touch Sensing Group 6
 ** Sampling Capacitor -> PB14, GND
 ** C KEY -> PB11
@@ -158,30 +160,40 @@ Two groups conisiting of a capacitor connected to ground and three different res
 ** A KEY -> PD14
 
 #### How it Works
-The process of reading the acquisition values recieved from the sampling channels and converting this to a specific note value requires a number of steps. Firstly the inbuilt HAL functions are used to discharge the capacitors before starting the acquisition process and charging the capaitor once more. The two groups are checked using polling if they have recieved this value which is then stored. This results in each cycle having two acquisition values, group 6 controls the 'C', 'D' and 'E' notes while group 8 controls the 'F', 'G' and 'A' notes. Note values can be registered by checking which tested range the acquisition values for the respective notes lie in.
+The process of reading the acquisition values recieved from the sampling channels and converting this to a specific note value requires a number of steps. Firstly the inbuilt HAL functions are used to discharge the capacitors before starting the acquisition process and charging the capaitor once more. The two groups are checked using polling if they have recieved this value which is then stored. This results in each cycle having two acquisition values, group 6 controls the 'C', 'D' and 'E' notes while group 8 controls the 'F', 'G' and 'A' notes. Note values can be registered by checking which tested range the acquisition values for the respective notes lie in. It is importnant to note that false positive values may occur when approahing smaller acquisition values which can be accounted for in the software.
 
 #### Software Elements
-Once
+Three index and flag values are used to measure if a note has been pressed on purpose or to check if the note is in the sequence and the user's current position in the sequence. Once an acquisition value has been measured and checked to be within a specific note range, the key value is updated with the note and a valid key counter is incremented. This valid key index is then checked to be above a certain threshold which will then output the key note as a uint8_t char to serial using USART, the index is then set to 0 before the next acquisition value is read. 
+
+There is a set pattern of notes which the user must reach in order. If the key is valid, the key is checked against the user's indexed position in the sequence. If the key is correct then the index is incremented and set to 0 if it is not. Once the end of the sequence has been reached, a completion flag is then raised. In the next iteration of the loop, if this flag is raised then a different char is sent through serial and the program exits
 
 #### Design Choices
-The 
+To validate note presses before they are tranmitted, an index of valid key presses is continually incremented and a note press is only considered valid once it reaches a threshold. This threshold can be adjusted.
 
 #### Testing
+Testing mainly consists of adjusting the ranges for the acquisition values due to the sensitivity of the electrodes. This sensivity is coaused by a number of factors, including the wire connection from the electrodes to the STM board, surface area of electrode covered, moisture on finger tips. 
 
+These values can be tested for experimentally by transmitting the acquisition values through serial to the user's terminal.
 
 ### Musical Sound with Python
+The note once passed to the serial port can then be read in python and played aloud. A victory tune and hint for the next image are loaded when the completion char is received.
 
 #### Setup
+The script requires the installation of a number of python packages which can be downloaded in the user's local terminal:
+- serial --> pip install pyserial
+- musicalbeeps --> pip install musicalbeeps
+- playsound --> pip install playsound
+- PIL --> pip install pillow
+
+Download the victory tune as a .wav file and the image as .jpg.
+
+Once the board has been flashed with the above C code, the Python code can then be run selecting the correct serial port to read from.
 
 #### How it Works
-
-#### Software Elements
-
-#### Design Choices
+The char from the C code is received as a byte which is then decoded then passed to a function that checks the note in a list. If the note is in the list then the note plays or in the case of completion, the victory tune is played and the image containing the next hint is loaded.
 
 #### Testing
-
-
+Testing involved checking each note worked as well as the overall integration between the packages.
 
 ## Section 5 - 7-Seg Displays and Buzzer
 
