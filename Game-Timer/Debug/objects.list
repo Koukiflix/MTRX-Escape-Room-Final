@@ -1,0 +1,8 @@
+"./Src/syscalls.o"
+"./Src/sysmem.o"
+"./Src/timer_buzzInterrupt.o"
+"./Src/timer_countInterrupt.o"
+"./Src/timer_display.o"
+"./Src/timer_led.o"
+"./Src/timer_main.o"
+"./Startup/startup_stm32f303vctx.o"

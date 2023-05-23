@@ -1,0 +1,3 @@
+initialisation.c:10:6:enable_clocks	1
+initialisation.c:19:6:initialise_board	1
+initialisation.c:27:6:enableUSART1	1
